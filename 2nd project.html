@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+        ul li {
+            cursor: pointer;
+            position: relative;
+            padding: 12px 8px 12px 40px;
+            background: #eee;
+            font-size: 18px;
+            transition: 0.2s;
+            user-select: none;
+        }
+        ul li:nth-child(odd) {
+            background: #f9f9f9;
+        }
+        ul li:hover {
+            background: #ddd;
+        }
+        ul li.checked {
+            background: #888;
+            color: #fff;
+            text-decoration: line-through;
+        }
+        ul li.checked::before {
+            content: '';
+            position: absolute;
+            border-color: #fff;
+            border-style: solid;
+            border-width: 0 2px 2px 0;
+            top: 10px;
+            left: 16px;
+            transform: rotate(45deg);
+            height: 15px;
+            width: 7px;
+        }
+        .close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 12px 16px 12px 16px;
+        }
+        .close:hover {
+            background-color: #f44336;
+            color: white;
+        }
+        .header {
+            background-color: black;
+            padding: 30px 40px;
+            color: white;
+            text-align: center;
+        }
+        .header:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        input {
+            margin: 0;
+            border: none;
+            border-radius: 0;
+            width: 75%;
+            padding: 10px;
+            float: left;
+            font-size: 16px;
+        }
+        .addbutton {
+            padding: 10px;
+            width: 25%;
+            background: #d9d9d9;
+            color: #555;
+            float: left;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 0;
+        }
+        .addbutton:hover {
+            background-color: #bbb;
+        }
+        .listmenu {
+            float: left;
+            width: 75%;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+        }
+        .Datetime {
+            float: left;
+            width: 75%;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+        }
+        .choice{
+            padding: 10px;
+            width: 20%;
+            background: #d9d9d9;
+            color: #555;
+            float: left;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            border-radius: 0;
+        }
+        .choice:hover {
+            background-color: #bbb;
+        }
+        .edit {
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 12px 16px 12px 16px;
+            margin-right: 40px;
+        }
+        .edit:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="heading" class="header">
+        <h2>My To-Do List</h2>
+        <input type="text" id="input" placeholder="Enter Your To-Do..">
+        <select id="menu" class="listmenu">
+            <option value="Personal">Personal</option>
+            <option value="Work">Work</option>
+            <option value="Education">Education</option>
+            <option value="others">Others</option>
+        </select>
+        <input type="datetime-local" id="datetime" class="Datetime">
+        <span onclick="newElement()" class="addbutton">Add</span>
+    </div>
+
+    <div id="choice" class="header">
+        <span onclick="filterElement('All')" class="choice">All</span>
+        <span onclick="filterElement('Personal')" class="choice">Personal</span>
+        <span onclick="filterElement('Work')" class="choice">Work</span>
+        <span onclick="filterElement('Education')" class="choice">Education</span>
+        <span onclick="filterElement('others')" class="choice">Others</span>
+    </div>
+
+    <ul id="ul">
+    </ul>
+
+    <script>
+        var myNodelist = document.getElementById("ul");
+        var input = document.getElementById("input");
+        var listmenu = document.getElementById("menu");
+        var datetime = document.getElementById("datetime");
+        loadtodos();
+
+        function addCloseButton(li) {
+            var span = document.createElement("SPAN");
+            var txt = document.createTextNode("\u00D7");
+            span.className = "close";
+            span.appendChild(txt);
+            li.appendChild(span);
+        }
+        function addEditButton(li) {
+            var span = document.createElement("SPAN");
+            var txt = document.createTextNode("\u270E");
+            span.className = "edit";
+            span.appendChild(txt);
+            li.appendChild(span);
+        }
+        function addCheckMark(li) {
+            li.onclick = function (ev) {
+                if (ev.target.tagName === 'LI') {
+                    ev.target.classList.toggle('checked');
+                    saveTodos();
+                }
+            };
+        }
+        function addDelete(span) {
+            span.onclick = function () {
+                var li = this.parentElement;
+                li.style.display = "none";
+                saveTodos();
+            }
+        }
+        function addEdit(span) {
+            span.onclick = function () {
+                var li = this.parentElement;
+                var title = li.firstChild.textContent;
+                var category = li.getAttribute("data-category");
+                var date = li.getAttribute("data-datetime");
+                input.value = title;
+                listmenu.value = category;
+                datetime.value = date;
+                li.style.display = "none";
+                saveTodos();
+            }
+        }
+        function newElement() {
+            var li = document.createElement("li");
+            var inputValue = input.value;
+            var listmenuValue = listmenu.value;
+            var datetimeValue = datetime.value;
+            var t = document.createTextNode(inputValue);
+            li.appendChild(t);
+            if (inputValue === '') {
+                alert("You have not written anything!");
+            } else {
+                li.setAttribute("data-category", listmenuValue);
+                li.setAttribute("data-datetime", datetimeValue);
+                myNodelist.appendChild(li);
+            }
+            input.value = "";
+            datetime.value = "";
+            addCloseButton(li);
+            addEditButton(li);
+            addCheckMark(li);
+            addDelete(li.lastChild.previousSibling);
+            addEdit(li.lastChild);
+            saveTodos();
+        }
+        function filterElement(category) {
+            var li = myNodelist.getElementsByTagName("li");
+            for (var i = 0; i < li.length; i++) {
+                var liCategory = li[i].getAttribute("data-category");
+                if (category === "All" || category === liCategory) {
+                    li[i].style.display = "";
+                } else {
+                    li[i].style.display = "none";
+                }
+            }
+        }
+        function saveTodos() {
+            var li = myNodelist.getElementsByTagName("li");
+            var todos = [];
+            for (var i = 0; i < li.length; i++) {
+                var todo = {
+                    title: li[i].firstChild.textContent,
+                    category: li[i].getAttribute("data-category"),
+                    datetime: li[i].getAttribute("data-datetime"),
+                    checked: li[i].classList.contains("checked")
+                };
+                todos.push(todo);
+            }
+            localStorage.setItem("todos", JSON.stringify(todos));
+        }
+        function loadtodos() {
+            var todos = JSON.parse(localStorage.getItem("todos"));
+            if (todos) {
+                for (var i = 0; i < todos.length; i++) {
+                    var todo = todos[i];
+                    var li = document.createElement("li");
+                    var t = document.createTextNode(todo.title);
+                    li.appendChild(t);
+                    li.setAttribute("data-category", todo.category);
+                    li.setAttribute("data-datetime", todo.datetime);
+                    if (todo.checked) {
+                        li.classList.add("checked");
+                    }
+                    myNodelist.appendChild(li);
+                    addCloseButton(li);
+                    addEditButton(li);
+                    addCheckMark(li);
+                    addDelete(li.lastChild.previousSibling);
+                    addEdit(li.lastChild);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
